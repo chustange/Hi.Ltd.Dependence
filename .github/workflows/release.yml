@@ -1,0 +1,66 @@
+name: 发布依赖包
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: 创建发布版本
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 检查各平台是否有依赖文件
+        id: check
+        run: |
+          has_windows=$(find dependencies/windows dependencies/common -not -name '.gitkeep' -type f | grep -q . && echo "true" || echo "false")
+          has_linux=$(find dependencies/linux dependencies/common -not -name '.gitkeep' -type f | grep -q . && echo "true" || echo "false")
+          has_macos=$(find dependencies/macos dependencies/common -not -name '.gitkeep' -type f | grep -q . && echo "true" || echo "false")
+          echo "has_windows=$has_windows" >> "$GITHUB_OUTPUT"
+          echo "has_linux=$has_linux" >> "$GITHUB_OUTPUT"
+          echo "has_macos=$has_macos" >> "$GITHUB_OUTPUT"
+
+      - name: 打包 Windows 依赖
+        if: steps.check.outputs.has_windows == 'true'
+        run: zip -r windows-dependencies.zip dependencies/windows/ dependencies/common/ --exclude '*/.gitkeep'
+
+      - name: 打包 Linux 依赖
+        if: steps.check.outputs.has_linux == 'true'
+        run: tar --exclude='*/.gitkeep' -czf linux-dependencies.tar.gz dependencies/linux/ dependencies/common/
+
+      - name: 打包 macOS 依赖
+        if: steps.check.outputs.has_macos == 'true'
+        run: zip -r macos-dependencies.zip dependencies/macos/ dependencies/common/ --exclude '*/.gitkeep'
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "依赖包 ${{ github.ref_name }}"
+          body: |
+            ## 依赖包 ${{ github.ref_name }}
+
+            请根据您的操作系统下载对应的依赖包：
+
+            | 平台 | 下载文件 |
+            |------|----------|
+            | Windows | `windows-dependencies.zip` |
+            | Linux   | `linux-dependencies.tar.gz` |
+            | macOS   | `macos-dependencies.zip` |
+
+            > `common` 目录的通用依赖已包含在各平台包中。
+
+            详细变更请查阅 [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)。
+          files: |
+            windows-dependencies.zip
+            linux-dependencies.tar.gz
+            macos-dependencies.zip
+          fail_on_unmatched_files: false
+          draft: false
+          prerelease: false
