@@ -1,0 +1,25 @@
+{
+  "name": "Hi.Ltd.Dependence",
+  "description": "程序运行时必要文件依赖清单",
+  "version": "1.0.0",
+  "base_url": "https://github.com/chustange/Hi.Ltd.Dependence/raw/main/dependencies",
+  "schema": {
+    "dependency_fields": {
+      "name": "依赖文件的名称（必填）",
+      "version": "文件版本号，格式如 1.0.0（必填）",
+      "platform": "适用平台：windows / linux / macos / common（必填）",
+      "file_path": "相对于 base_url 的文件路径，如 windows/example.dll（必填）",
+      "sha256": "文件 SHA-256 校验值，用于完整性验证（推荐填写）",
+      "description": "文件说明（可选）"
+    },
+    "example": {
+      "name": "example-runtime",
+      "version": "1.0.0",
+      "platform": "windows",
+      "file_path": "windows/example-runtime.dll",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "description": "示例运行时动态链接库"
+    }
+  },
+  "dependencies": []
+}
